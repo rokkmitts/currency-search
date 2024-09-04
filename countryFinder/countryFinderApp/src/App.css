@@ -1,0 +1,48 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.card {
+  padding: 2em;
+}
+
+.country {
+  border: red solid 1px;
+  border-radius: 10px;
+  margin: 10px;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+#errorCSS {
+  font-size: 20px;
+  color: red;
+}
+
+#successCSS {
+  font-size: 20px;
+  color: green;
+}
+
+img {
+  width: 320px;
+  height: 200px;
+}
+
+.item-stack {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 10px;
+}
+
+.item-btn {
+  margin-left: 30px;
+  height: fit-content;
+  width: 80px;
+}
