@@ -1,13 +1,10 @@
 //dependencies
 import { useEffect, useState } from "react";
 import axios from "axios";
-
 //Main Component
 const App = () => {
   //locally held APIs information for countries
   const [countries, setCountries] = useState([]);
-  //locally held APIs information for weather in countries
-  const [countryWeather, setCountryWeather] = useState([]);
   //the users types input
   const [searchItem, setSearchItem] = useState("");
 
@@ -34,7 +31,15 @@ const App = () => {
         const response = await axios.get(countryUrl);
         setCountries(response.data);
       } catch (error) {
-        console.log(`Fetched error data: ${error.data}`);
+        console.log(`countryFX error fetch: ${error.data}, ${error.message}`);
+      }
+    };
+
+    const fetchWeather = () => {
+      try {
+        const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${APIkey}`;
+      } catch (error) {
+        console.log(`error in weather fetch: ${error.data}`);
       }
     };
 
@@ -109,14 +114,25 @@ const App = () => {
             width="350px"
             height="250px"
           />
-          <p>Coat of Arms: </p>
+          <h4>Coat of Arms: </h4>
           <img
             src={countries[0].coatOfArms.png}
             alt={`${countries[0].name.common}'s COA flag`}
             width="350px"
-            height="250px"
+            height="355px"
           />
-          <p>Longitude & Latitude: {countries[0].latlng.join(", ")}</p>
+          <div>
+            <h2>
+              Weather in {countries[0].name.common} capital;{" "}
+              {countries[0].capital}
+            </h2>
+            <p>Temperature {}</p>
+            <img src="" alt="" />
+            <p>
+              {" "}
+              Capital Lat,Long: {countries[0].capitalInfo.latlng.join(", ")}
+            </p>
+          </div>
         </div>
       )}
     </div>
