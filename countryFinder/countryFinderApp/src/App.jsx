@@ -1,12 +1,19 @@
 //dependencies
 import { useEffect, useState } from "react";
 import axios from "axios";
+
 //Main Component
 const App = () => {
   //locally held APIs information for countries
   const [countries, setCountries] = useState([]);
   //the users types input
   const [searchItem, setSearchItem] = useState("");
+  //user select country
+  const [selectedCountry, setSelectedCountry] = useState(null);
+  //locally held weatherAPI information for country
+  const [weatherData, setWeatherData] = useState(null);
+  //meesage for weatherAPI alert
+  const [ApiError, setApiError] = useState(null);
 
   //isolate selected country - long formatted way to use on button click
   // const [isolate, setIsolate] = useState(null);
@@ -30,21 +37,58 @@ const App = () => {
         const countryUrl = `https://restcountries.com/v3.1/name/${searchItem}`;
         const response = await axios.get(countryUrl);
         setCountries(response.data);
-      } catch (error) {
-        console.log(`countryFX error fetch: ${error.data}, ${error.message}`);
-      }
-    };
 
-    const fetchWeather = () => {
-      try {
-        const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${APIkey}`;
+        if (selectedCountry) {
+          const capital = selectedCountry.capital;
+          fetchWeather(capital);
+          console.log(capital);
+        }
       } catch (error) {
-        console.log(`error in weather fetch: ${error.data}`);
+        console.log(
+          `country function error fetch: ${error.data}, ${error.message}`
+        );
       }
     };
 
     fetchCountries();
   }, [searchItem]);
+
+  const fetchWeather = async (capital) => {
+    try {
+      console.log(import.meta.env.VITE_SOME_KEY);
+      const apiKey = import.meta.env.VITE_SOME_KEY;
+      const hardKEY = "ef081b13568d142e9cd02535eb2d1f93";
+      const version2_5 = `https://api.openweathermap.org/data/2.5/weather?q=${capital}&appid=${hardKEY}&units=imperial`;
+      const weatherResponse = await axios.get(version2_5);
+      setWeatherData(weatherResponse.data);
+      setApiError(null);
+    } catch (error) {
+      setWeatherData(null);
+      console.error(`Error fetchng weather: ${error}`);
+      setApiError(`error retching data`);
+    }
+  };
+
+  //hanlde button click
+  const handlerButtonClick = (obj) => {
+    setSearchItem(obj.name.common);
+
+    setSelectedCountry(obj);
+  };
+
+  const inputListener = (e) => {
+    setSearchItem(e.target.value);
+    countries.find((item) => {
+      return item.name.common.includes(e.target.value);
+    });
+
+    if (e.target.value === "") {
+      setSelectedCountry(null);
+    }
+
+    if (countries.length === 1) setSelectedCountry(countries[0]);
+    if (countries.length > 1) setSelectedCountry(null);
+  };
 
   //language rendering function works for Objs and Arr
   const renderLanguages = (languages) => {
@@ -57,9 +101,6 @@ const App = () => {
     }
   };
 
-  //Handle button click to render single country
-  // const handleBtn = (country) => setIsolate(country);
-
   //Components rendering
   return (
     <div>
@@ -70,7 +111,7 @@ const App = () => {
         type="text"
         value={searchItem}
         onChange={(e) => {
-          setSearchItem(e.target.value);
+          inputListener(e);
         }}
       />
       {searchItem === "" && (
@@ -88,7 +129,7 @@ const App = () => {
                 {country.name.common}{" "}
                 <button
                   onClick={() => {
-                    setSearchItem(country.name.common);
+                    handlerButtonClick(country);
                   }}
                 >
                   Show Data
@@ -98,45 +139,53 @@ const App = () => {
           </ul>
         </div>
       )}
-      {countries.length === 1 && (
+      {countries.length <= 1 && selectedCountry && (
         <div>
-          <h2>{countries[0].name.common}</h2>
-          <p>Capital: {countries[0].capital}</p>
-          <p>Area: {countries[0].area}</p>
+          <h2>{selectedCountry.name.common}</h2>
+          <p>Capital: {selectedCountry.capital}</p>
+          <p>Area: {selectedCountry.area}</p>
           <ul>
             Languages:{" "}
-            {countries[0].languages && renderLanguages(countries[0].languages)}
+            {selectedCountry.languages &&
+              renderLanguages(selectedCountry.languages)}
           </ul>
           <p>Flag:</p>
           <img
-            src={countries[0].flags.png}
-            alt={`${countries[0].name.common} national flag`}
+            src={selectedCountry.flags.png}
+            alt={`${selectedCountry.name.common} national flag`}
             width="350px"
             height="250px"
           />
           <h4>Coat of Arms: </h4>
           <img
-            src={countries[0].coatOfArms.png}
-            alt={`${countries[0].name.common}'s COA flag`}
+            src={selectedCountry.coatOfArms.png}
+            alt={`${selectedCountry.name.common}'s COA flag`}
             width="350px"
             height="355px"
           />
           <div>
             <h2>
-              Weather in {countries[0].name.common} capital;{" "}
-              {countries[0].capital}
+              Weather in {selectedCountry.name.common} capital;{" "}
+              {selectedCountry.capital}
             </h2>
-            <p>Temperature {}</p>
-            <img src="" alt="" />
-            <p>
-              {" "}
-              Capital Lat,Long: {countries[0].capitalInfo.latlng.join(", ")}
-            </p>
+            <h3>{weatherData && weatherData.weather[0].main}</h3>
+
+            {weatherData && (
+              <img
+                src={`https://openweathermap.org/img/wn/${weatherData.weather[0].icon}.png`}
+                alt={`${weatherData.weather[0].main} icon`}
+              ></img>
+            )}
+            <h3>{ApiError}</h3>
+            <div>
+              {weatherData && <p>Temperature: {weatherData.main.temp}°F</p>}
+              {weatherData && <p>Hunmidity: {weatherData.main.humidity} %</p>}
+              {weatherData && <p>Wind: {weatherData.wind.speed}</p>}
+            </div>
           </div>
         </div>
       )}
     </div>
   );
 };
-
 export default App;
